@@ -21,10 +21,8 @@ void Game::start() {
 	}
 
 	makeMap();
-	while( checkPop() ) {
-		combo++;
-	}
 	drawMap();
+	processCandyCrush();
 }
 
 void Game::makeMap() {
@@ -73,6 +71,15 @@ void Game::drawMap() {
 	}
 }
 
+void Game::processCandyCrush() {
+	combo = 0;
+
+	while( checkPop() ) {
+		combo++;
+		feedCandy();
+	}
+}
+
 bool Game::checkPop() {
 	int pop = 0;
 
@@ -105,7 +112,27 @@ bool Game::checkPop() {
 }
 
 void Game::feedCandy() {
-	int x, y;
+	int x, y, yy;
+
+	for(y=mapSize - 1; y>=0; y--) {
+		for(x=mapSize; x>=0; x--) {
+			Candy *c = map[x][y];
+
+			if(c->getPop()) {
+				delete c;
+
+				if(y > 0) {
+					for(yy=y; yy>=0; yy--) {
+						map[x][yy] = map[x][yy - 1];
+					}
+				}
+
+				map[x][0] = new Candy();
+
+				x++; // 다시 검사를 위함
+			}
+		}
+	}
 }
 
 void Game::addScore(int score) {

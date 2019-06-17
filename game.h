@@ -18,4 +18,5 @@ public:
 	bool checkPop();
 	void feedCandy();
 	void addScore(int);
+	void processCandyCrush();
 };
