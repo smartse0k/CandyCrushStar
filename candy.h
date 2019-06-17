@@ -3,6 +3,7 @@
 class Candy {
 	int type;
 	int select;
+	int pop;
 public:
 	Candy();
 	Candy(int);
@@ -11,6 +12,7 @@ public:
 	int getSelect();
 	void setSelect(int);
 	void drawCandy();
+	virtual void setPop();
 };
 
 enum CANDYTYPE {

@@ -7,6 +7,7 @@ using namespace std;
 Game::Game() {
 	bestScore = 0;
 	score = 0;
+	combo = 0;
 }
 
 void Game::start() {
@@ -20,7 +21,9 @@ void Game::start() {
 	}
 
 	makeMap();
-
+	while( checkPop() ) {
+		combo++;
+	}
 	drawMap();
 }
 
@@ -38,10 +41,16 @@ void Game::makeMap() {
 void Game::drawMap() {
 	system("cls");
 
-	cout << "C a n d y - C r u s h ★ S t a r" << endl << endl;
+	cout << endl;
+	cout << "  C a n d y - C r u s h ★ S t a r" << endl;
+	cout << endl;
+	cout << "  최고점수 => " << bestScore << endl;
+	cout << "  현재점수 => " << score << endl;
+	cout << "  플레이어 => " << "테스트" << endl;
+	cout << endl;
 
 	int x, y;
-	cout << " ";
+	cout << "  ";
 	for(y=-1; y<mapSize; y++) {
 		for(x=-1; x<mapSize; x++) {
 			if(y == -1) {
@@ -52,7 +61,7 @@ void Game::drawMap() {
 				}
 			} else {
 				if(x == -1) {
-					cout << (y + 1) << " ";
+					cout << "  " << (y + 1) << " ";
 				} else {
 					Candy *candy = map[x][y];
 					candy->drawCandy();
@@ -61,5 +70,49 @@ void Game::drawMap() {
 			}
 		}
 		cout << endl << endl;
+	}
+}
+
+bool Game::checkPop() {
+	int pop = 0;
+
+	// ■■■ 검사
+	int x, y;
+	for(y=0; y<mapSize; y++) {
+		for(x=0; x<mapSize - 2; x++) {
+			Candy *c1, *c2, *c3;
+			int t1, t2, t3;
+
+			c1 = map[x][y];
+			c2 = map[x][y];
+			c3 = map[x][y];
+
+			t1 = c1->getType();
+			t2 = c2->getType();
+			t3 = c3->getType();
+			
+			if(t1 == t2 && t2 == t3) {
+				c1->setPop();
+				c2->setPop();
+				c3->setPop();
+				addScore(10 * 3);
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+void Game::feedCandy() {
+	int x, y;
+}
+
+void Game::addScore(int score) {
+	score = score + score * (combo / 2);
+
+	this->score += score;
+	if(this->score >= bestScore) {
+		bestScore = this->score;
 	}
 }

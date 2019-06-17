@@ -5,6 +5,7 @@ ipch/
 # Prerequisites
 *.d
 *.sdf
+*.opensdf
 
 # Compiled Object files
 *.slo

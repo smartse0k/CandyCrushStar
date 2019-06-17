@@ -56,3 +56,7 @@ int Candy::getSelect() {
 void Candy::setSelect(int select) {
 	this->select = select;
 }
+
+void Candy::setPop() {
+	this->pop = 1;
+}
