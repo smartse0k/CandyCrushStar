@@ -1,5 +1,6 @@
 #include <iostream>
 #include <ctime>
+#include <conio.h>
 #include "game.h"
 #include "candy.h"
 
@@ -9,6 +10,8 @@ Game::Game() {
 	bestScore = 0;
 	score = 0;
 	combo = 0;
+	cursorX = 0;
+	cursorY = 0;
 	selectX = 0;
 	selectY = 0;
 }
@@ -30,7 +33,10 @@ void Game::start() {
 	}
 
 	makeMap();
-	processCandyCrush();
+	while(true) {
+		processCandyCrush();
+		input();
+	}
 }
 
 void Game::makeMap() {
@@ -72,7 +78,7 @@ void Game::drawMap() {
 				} else {
 					Candy *candy = map[x][y];
 
-					if(x == selectX && y == selectY) {
+					if(x == cursorX && y == cursorY) {
 						candy->drawCandy(true);
 					} else {
 						candy->drawCandy(false);
@@ -82,6 +88,78 @@ void Game::drawMap() {
 			}
 		}
 		cout << endl << endl;
+	}
+}
+
+void Game::input() {
+	cursorX = 0;
+	cursorY = 0;
+	selectX = -1;
+	selectY = -1;
+
+	while(true) {
+		drawMap();
+		
+		if(selectX == -1 && selectY == -1) {
+			cout << "  [캔디 선택 모드] 방향키: 커서 이동 / 스페이스바: 캔디 선택";
+		} else {
+			cout << "  [캔디 이동 모드] 방향키: 선택된 캔디 이동 / 스페이스바: 캔디 선택 해제";
+		}
+
+		int key = getch();
+		switch(key) {
+		case 72: // 위
+		case 119: // w
+			if(selectX == -1 && selectY == -1) {
+				if(cursorY > 0) {
+					cursorY--;
+				}
+			} else {
+
+			}
+			break;
+		case 80: // 아
+		case 115: // s
+			if(selectX == -1 && selectY == -1) {
+				if(cursorY < mapSize - 1) {
+					cursorY++;
+				}
+			} else {
+
+			}
+			break;
+		case 75: // 왼
+		case 97: // a
+			if(selectX == -1 && selectY == -1) {
+				if(cursorX > 0) {
+					cursorX--;
+				}
+			} else {
+
+			}
+			break;
+		case 77: // 오
+		case 100: // d
+			if(selectX == -1 && selectY == -1) {
+				if(cursorX < mapSize - 1) {
+					cursorX++;
+				}
+			} else {
+
+			}
+			break;
+		case 32: // 스페이스
+		case 13: // 엔터
+		case 10:
+			if(selectX == -1 && selectY == -1) {
+				selectX = cursorX;
+				selectY = cursorY;
+			} else {
+				selectX = -1;
+				selectY = -1;
+			}
+			break;
+		}
 	}
 }
 
