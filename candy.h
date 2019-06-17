@@ -11,7 +11,7 @@ public:
 	void setType(int);
 	int getSelect();
 	void setSelect(int);
-	void drawCandy();
+	void drawCandy(bool);
 	int getPop();
 	virtual void setPop();
 };

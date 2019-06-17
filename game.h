@@ -9,6 +9,8 @@ class Game {
 	int bestScore;
 	int score;
 	int combo;
+	int selectX;
+	int selectY;
 public:
 	Game();
 	void start();
@@ -19,4 +21,5 @@ public:
 	void feedCandy();
 	void addScore(int);
 	void processCandyCrush();
+	void delay(int);
 };

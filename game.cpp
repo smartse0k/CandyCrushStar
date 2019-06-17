@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ctime>
 #include "game.h"
 #include "candy.h"
 
@@ -8,6 +9,14 @@ Game::Game() {
 	bestScore = 0;
 	score = 0;
 	combo = 0;
+	selectX = 0;
+	selectY = 0;
+}
+
+void Game::delay(int ms) {
+	clock_t delay = ms;
+	clock_t start = clock();
+	while (clock() - start < delay);
 }
 
 void Game::start() {
@@ -21,7 +30,6 @@ void Game::start() {
 	}
 
 	makeMap();
-	drawMap();
 	processCandyCrush();
 }
 
@@ -45,6 +53,7 @@ void Game::drawMap() {
 	cout << "  최고점수 => " << bestScore << endl;
 	cout << "  현재점수 => " << score << endl;
 	cout << "  플레이어 => " << "테스트" << endl;
+	cout << "      콤보 => " << combo << endl;
 	cout << endl;
 
 	int x, y;
@@ -62,7 +71,12 @@ void Game::drawMap() {
 					cout << "  " << (y + 1) << " ";
 				} else {
 					Candy *candy = map[x][y];
-					candy->drawCandy();
+
+					if(x == selectX && y == selectY) {
+						candy->drawCandy(true);
+					} else {
+						candy->drawCandy(false);
+					}
 					cout << " ";
 				}
 			}
@@ -73,26 +87,57 @@ void Game::drawMap() {
 
 void Game::processCandyCrush() {
 	combo = 0;
-
+	
 	while( checkPop() ) {
+		drawMap();
+		delay(500);
+
 		combo++;
 		feedCandy();
+
+		drawMap();
+		delay(500);
 	}
 }
 
 bool Game::checkPop() {
 	int pop = 0;
 
-	// ■■■ 검사
 	int x, y;
+
+	// ■■■ 검사
 	for(y=0; y<mapSize; y++) {
 		for(x=0; x<mapSize - 2; x++) {
 			Candy *c1, *c2, *c3;
 			int t1, t2, t3;
 
 			c1 = map[x][y];
-			c2 = map[x][y];
-			c3 = map[x][y];
+			c2 = map[x + 1][y];
+			c3 = map[x + 2][y];
+
+			t1 = c1->getType();
+			t2 = c2->getType();
+			t3 = c3->getType();
+			
+			if(t1 == t2 && t2 == t3) {
+				c1->setPop();
+				c2->setPop();
+				c3->setPop();
+				addScore(10 * 3);
+				return true;
+			}
+		}
+	}
+
+	// 세로 ■■■ 검사
+	for(y=0; y<mapSize - 2; y++) {
+		for(x=0; x<mapSize; x++) {
+			Candy *c1, *c2, *c3;
+			int t1, t2, t3;
+
+			c1 = map[x][y];
+			c2 = map[x][y + 1];
+			c3 = map[x][y + 2];
 
 			t1 = c1->getType();
 			t2 = c2->getType();
@@ -115,7 +160,7 @@ void Game::feedCandy() {
 	int x, y, yy;
 
 	for(y=mapSize - 1; y>=0; y--) {
-		for(x=mapSize; x>=0; x--) {
+		for(x=0; x<mapSize; x++) {
 			Candy *c = map[x][y];
 
 			if(c->getPop()) {
@@ -129,7 +174,7 @@ void Game::feedCandy() {
 
 				map[x][0] = new Candy();
 
-				x++; // 다시 검사를 위함
+				x--; // 다시 검사를 위함
 			}
 		}
 	}
