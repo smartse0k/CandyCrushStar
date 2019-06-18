@@ -23,8 +23,12 @@ void Game::delay(int ms) {
 }
 
 void Game::start() {
+	cout << endl;
+	cout << "  C a n d y - C r u s h ★ S t a r" << endl;
+	cout << endl;
+
 	while(true) {
-		cout << "맵 크기를 입력해보세요 (5 ~ 10): ";
+		cout << "  맵 크기를 입력해보세요 (5 ~ 10): ";
 		cin >> mapSize;
 
 		if(mapSize >= 5 && mapSize <= 10) {
@@ -32,14 +36,85 @@ void Game::start() {
 		}
 	}
 
-	amountMove = 15;
+	cout << endl;
+	
+	while(true) {
+		cout << "  캔디 이동수 제한을 입력해보세요 (5 ~ 99): ";
+		cin >> amountMove;
 
-	makeMap();
-
-	while(amountMove > 0) {
-		processCandyCrush();
-		input();
+		if(amountMove >= 5 || amountMove <= 99) {
+			break;
+		}
 	}
+
+	cout << endl;
+
+	while(true) {
+		cout << "  참여할 인원 수를 입력해보세요 (1 ~ 10): ";
+		cin >> playernum;
+
+		if(playernum >= 1 || playernum <= 10) {
+			break;
+		}
+	}
+
+	cout << endl;
+
+	players = new Player[playernum];
+	for(int i=0; i<playernum; i++) {
+		char name[100];
+		cout << "     " << (i + 1) << "번째 플레이어의 이름을 입력해보세요: ";
+		cin >> name;
+		//cout << "입력됨: " << name << endl;
+		players[i].setName(name);
+	}
+
+	/*
+	for(int i=0; i<playernum; i++) {
+		cout << "플레이어" << (i+1) << ": " << players[i].getName() << endl;
+	}
+	*/
+
+	for(int i=0; i<playernum; i++) {
+		currentPlayer = i;
+		score = 0;
+		leftAmountMove = amountMove;
+
+		makeMap();
+		processCandyCrush();
+		while(leftAmountMove > 0) {
+			input();
+			processCandyCrush();
+		}
+		deleteMap();
+
+		players[i].setScore(score);
+
+		cout << endl << endl;
+		cout << "  플레이어 '" << players[i].getName() << "'의 차례가 끝났어요" << endl;
+		while(true) {
+			cout << "    계속 하려면 1을 입력하세요: ";
+			int i;
+			cin >> i;
+			if(i == 1) {
+				break;
+			}
+		}
+	}
+
+	system("cls");
+	cout << endl;
+	cout << "  C a n d y - C r u s h ★ S t a r" << endl;
+	cout << endl;
+	cout << "  성적표" << endl;
+	for(int i=0; i<playernum; i++) {
+		cout << "    " << players[i].getName() << " => " << players[i].getScore() << "점" << endl;
+	}
+	cout << endl;
+	cout << " THE END." << endl;
+
+	int a;
+	cin >> a;
 }
 
 void Game::makeMap() {
@@ -53,6 +128,15 @@ void Game::makeMap() {
 	}
 }
 
+void Game::deleteMap() {
+	int x, y;
+	for(x=0; x<mapSize; x++) {
+		for(y=0; y<mapSize; y++) {
+			delete map[x][y];
+		}
+	}
+}
+
 void Game::drawMap() {
 	system("cls");
 
@@ -61,8 +145,8 @@ void Game::drawMap() {
 	cout << endl;
 	cout << "  최고점수 => " << bestScore << endl;
 	cout << "  현재점수 => " << score << endl;
-	cout << "  플레이어 => " << "테스트" << endl;
-	cout << "  남은회수 => " << amountMove << endl;
+	cout << "  플레이어 => " << players[currentPlayer].getName() << endl;
+	cout << "  남은회수 => " << leftAmountMove << endl;
 	cout << "      콤보 => " << combo << endl;
 	cout << endl;
 
@@ -135,7 +219,7 @@ void Game::moveCandy(int x, int y, int dir) {
 		break;
 	}
 
-	amountMove--;
+	leftAmountMove--;
 }
 
 void Game::input() {
@@ -153,7 +237,7 @@ void Game::input() {
 			cout << "  [캔디 이동 모드] 방향키: 선택된 캔디 이동 / 스페이스바: 캔디 선택 해제";
 		}
 
-		int key = getch();
+		int key = _getch();
 		switch(key) {
 		case 72: // 위
 		case 119: // w
@@ -237,7 +321,7 @@ void Game::processCandyCrush() {
 	}
 }
 
-bool Game::pop(Candy *candy, int x, int y) {
+void Game::pop(Candy *candy, int x, int y) {
 	int candyAttribute = candy->getCandyAttribute();
 
 	switch(candyAttribute) {
@@ -381,9 +465,9 @@ bool Game::checkPop() {
 			t3 = c3->getType();
 			
 			if(t1 == t2 && t2 == t3) {
-				c1->setPop();
-				c2->setPop();
-				c3->setPop();
+				this->pop(c1, x, y);
+				this->pop(c2, x + 1, y);
+				this->pop(c3, x + 2, y);
 				addScore(10 * 3);
 				return true;
 			}
@@ -405,9 +489,9 @@ bool Game::checkPop() {
 			t3 = c3->getType();
 			
 			if(t1 == t2 && t2 == t3) {
-				c1->setPop();
-				c2->setPop();
-				c3->setPop();
+				this->pop(c1, x, y);
+				this->pop(c2, x, y + 1);
+				this->pop(c3, x, y + 2);
 				addScore(10 * 3);
 				return true;
 			}

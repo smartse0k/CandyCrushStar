@@ -23,7 +23,7 @@ public:
 	BombCandy(Candy *);
 	virtual void drawCandy(bool);
 	virtual int getCandyAttribute();
-}
+};
 
 enum CANDYTYPE {
 	CANDY_RECT = 0,
