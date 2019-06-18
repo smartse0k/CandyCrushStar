@@ -11,10 +11,19 @@ public:
 	void setType(int);
 	int getSelect();
 	void setSelect(int);
-	void drawCandy(bool);
+	virtual void drawCandy(bool);
 	int getPop();
 	virtual void setPop();
+	void changeCandyAttribute(int);
+	virtual int getCandyAttribute();
 };
+
+class BombCandy : public Candy {
+public:
+	BombCandy(Candy *);
+	virtual void drawCandy(bool);
+	virtual int getCandyAttribute();
+}
 
 enum CANDYTYPE {
 	CANDY_RECT = 0,
@@ -28,4 +37,9 @@ enum CANDYTYPE {
 enum SELECTTYPE {
 	NOT_SELECTED = 0,
 	SELECTED,
+};
+
+enum CANDYATTR {
+	CANDY_DEFAULT = 0,
+	CANDY_BOMB,
 };

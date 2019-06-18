@@ -32,8 +32,11 @@ void Game::start() {
 		}
 	}
 
+	amountMove = 15;
+
 	makeMap();
-	while(true) {
+
+	while(amountMove > 0) {
 		processCandyCrush();
 		input();
 	}
@@ -59,6 +62,7 @@ void Game::drawMap() {
 	cout << "  최고점수 => " << bestScore << endl;
 	cout << "  현재점수 => " << score << endl;
 	cout << "  플레이어 => " << "테스트" << endl;
+	cout << "  남은회수 => " << amountMove << endl;
 	cout << "      콤보 => " << combo << endl;
 	cout << endl;
 
@@ -91,6 +95,49 @@ void Game::drawMap() {
 	}
 }
 
+void Game::moveCandy(int x, int y, int dir) {
+	switch(dir) {
+	case 'w':
+		if(selectY > 0) {
+			Candy *thisCandy, *targetCandy;
+			thisCandy = map[x][y];
+			targetCandy = map[x][y - 1];
+			map[x][y] = targetCandy;
+			map[x][y - 1] = thisCandy;
+		}
+		break;
+	case 's':
+		if(selectY < mapSize - 1) {
+			Candy *thisCandy, *targetCandy;
+			thisCandy = map[x][y];
+			targetCandy = map[x][y + 1];
+			map[x][y] = targetCandy;
+			map[x][y + 1] = thisCandy;
+		}
+		break;
+	case 'a':
+		if(selectX > 0) {
+			Candy *thisCandy, *targetCandy;
+			thisCandy = map[x][y];
+			targetCandy = map[x - 1][y];
+			map[x][y] = targetCandy;
+			map[x - 1][y] = thisCandy;
+		}
+		break;
+	case 'd':
+		if(selectX < mapSize - 1) {
+			Candy *thisCandy, *targetCandy;
+			thisCandy = map[x][y];
+			targetCandy = map[x + 1][y];
+			map[x][y] = targetCandy;
+			map[x + 1][y] = thisCandy;
+		}
+		break;
+	}
+
+	amountMove--;
+}
+
 void Game::input() {
 	cursorX = 0;
 	cursorY = 0;
@@ -115,37 +162,49 @@ void Game::input() {
 					cursorY--;
 				}
 			} else {
-
+				moveCandy(selectX, selectY, 'w');
+				selectX = -1;
+				selectY = -1;
+				return;
 			}
 			break;
-		case 80: // 아
+		case 80: // 아래
 		case 115: // s
 			if(selectX == -1 && selectY == -1) {
 				if(cursorY < mapSize - 1) {
 					cursorY++;
 				}
 			} else {
-
+				moveCandy(selectX, selectY, 's');
+				selectX = -1;
+				selectY = -1;
+				return;
 			}
 			break;
-		case 75: // 왼
+		case 75: // 왼쪽
 		case 97: // a
 			if(selectX == -1 && selectY == -1) {
 				if(cursorX > 0) {
 					cursorX--;
 				}
 			} else {
-
+				moveCandy(selectX, selectY, 'a');
+				selectX = -1;
+				selectY = -1;
+				return;
 			}
 			break;
-		case 77: // 오
+		case 77: // 오른쪽
 		case 100: // d
 			if(selectX == -1 && selectY == -1) {
 				if(cursorX < mapSize - 1) {
 					cursorX++;
 				}
 			} else {
-
+				moveCandy(selectX, selectY, 'd');
+				selectX = -1;
+				selectY = -1;
+				return;
 			}
 			break;
 		case 32: // 스페이스
@@ -178,10 +237,134 @@ void Game::processCandyCrush() {
 	}
 }
 
+bool Game::pop(Candy *candy, int x, int y) {
+	int candyAttribute = candy->getCandyAttribute();
+
+	switch(candyAttribute) {
+	case CANDY_DEFAULT:
+		// x
+		break;
+	case CANDY_BOMB:
+		int testX = 0, testY = 0;
+		if(x > 0) { // 왼
+			map[x - 1][y]->setPop();
+			testX++;
+		}
+		if(y > 0) { // 위
+			map[x][y - 1]->setPop();
+			testY++;
+		}
+		if(x < mapSize - 1) { // 아
+			map[x + 1][y]->setPop();
+			testX++;
+		}
+		if(y < mapSize - 1) { // 오
+			map[x][y + 1]->setPop();
+			testY++;
+		}
+		break;
+	}
+
+	candy->setPop();
+}
+
+void Game::replaceToBombCandy(int x, int y) {
+	Candy *candy = map[x][y];
+	Candy *bombcandy = new BombCandy(candy);
+	delete candy;
+	map[x][y] = bombcandy;
+}
+
 bool Game::checkPop() {
 	int pop = 0;
 
 	int x, y;
+	
+
+	// ■■
+	// ■■ 검사
+	for(y=0; y<mapSize - 1; y++) {
+		for(x=0; x<mapSize - 1; x++) {
+			Candy *c1, *c2, *c3, *c4;
+			int t1, t2, t3, t4;
+
+			c1 = map[x][y];
+			c2 = map[x + 1][y];
+			c3 = map[x][y + 1];
+			c4 = map[x + 1][y + 1];
+
+			t1 = c1->getType();
+			t2 = c2->getType();
+			t3 = c3->getType();
+			t4 = c4->getType();
+			
+			if(t1 == t2 && t2 == t3 && t3 == t4) {
+				this->pop(c1, x, y);
+				this->pop(c2, x + 1, y);
+				this->pop(c3, x + 2, y);
+				this->pop(c4, x + 3, y);
+				replaceToBombCandy(x, y);
+				addScore(15 * 4);
+				return true;
+			}
+		}
+	}
+
+	// ■■■■ 검사
+	for(y=0; y<mapSize; y++) {
+		for(x=0; x<mapSize - 3; x++) {
+			Candy *c1, *c2, *c3, *c4;
+			int t1, t2, t3, t4;
+
+			c1 = map[x][y];
+			c2 = map[x + 1][y];
+			c3 = map[x + 2][y];
+			c4 = map[x + 3][y];
+
+			t1 = c1->getType();
+			t2 = c2->getType();
+			t3 = c3->getType();
+			t4 = c4->getType();
+			
+			if(t1 == t2 && t2 == t3 && t3 == t4) {
+				this->pop(c1, x, y);
+				this->pop(c2, x + 1, y);
+				this->pop(c3, x + 2, y);
+				this->pop(c4, x + 3, y);
+				replaceToBombCandy(x, y);
+				addScore(15 * 4);
+				return true;
+			}
+		}
+	}
+
+	// ■■■■ 세로 검사
+	for(y=0; y<mapSize - 3; y++) {
+		for(x=0; x<mapSize; x++) {
+			Candy *c1, *c2, *c3, *c4;
+			int t1, t2, t3, t4;
+
+			c1 = map[x][y];
+			c2 = map[x][y + 1];
+			c3 = map[x][y + 2];
+			c4 = map[x][y + 3];
+
+			t1 = c1->getType();
+			t2 = c2->getType();
+			t3 = c3->getType();
+			t4 = c4->getType();
+			
+			if(t1 == t2 && t2 == t3 && t3 == t4) {
+				this->pop(c1, x, y);
+				this->pop(c2, x, y + 1);
+				this->pop(c3, x, y + 2);
+				this->pop(c4, x, y + 3);
+				replaceToBombCandy(x, y);
+				addScore(15 * 4);
+				return true;
+			}
+		}
+	}
 
 	// ■■■ 검사
 	for(y=0; y<mapSize; y++) {
